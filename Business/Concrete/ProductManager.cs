@@ -6,6 +6,7 @@ using System.Transactions;
 using Business.Abstract;
 using Business.Constants;
 using Business.ValidationRules.FluentValidations;
+using Core.Aspects.Autofac.Caching;
 using Core.Aspects.Autofac.Transaction;
 using Core.Aspects.Autofac.Validation;
 using Core.CrossCuttingConcerns.Validation.FluentValidation;
@@ -47,18 +48,21 @@ namespace Business.Concrete
             return new SuccessDataResult<List<Product>>(_productDal.GetList().ToList());
         }
 
+        [CacheAspect(duration:10)]
         public IDataResult<List<Product>> GetListByCategory(int categoryId)
         {
             return new SuccessDataResult<List<Product>>(_productDal.GetList(p=>p.CategoryId==categoryId).ToList());
         }
 
         [ValidationAspect(typeof(ProductValidator),Priority = 1)]
+        [CacheRemoveAspect("IProductService.Get")]//Pattern' i IProductService.Get olanları kaldırır.
         public IResult Add(Product product)
         {
             _productDal.Add(product);
             return new SuccessResult(Messages.Added);
         }
-        //[ValidationAspect(typeof(ProductValidator),Priority = 1)]
+
+        [ValidationAspect(typeof(ProductValidator),Priority = 1)]
         public IResult Update(Product product)
         {
             _productDal.Update(product);
@@ -70,6 +74,7 @@ namespace Business.Concrete
             _productDal.Delete(product);
             return new SuccessResult(Messages.Deleted);
         }
+
         [TransactionAspect]
         public IResult TransactionalOperation(Product product)
         {

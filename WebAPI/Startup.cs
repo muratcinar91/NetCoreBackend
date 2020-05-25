@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Core.DependencyResolvers;
+using Core.Extensions;
+using Core.Utilities.IOC;
 using Core.Utilities.Security.Encryption;
 using Core.Utilities.Security.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -35,6 +38,7 @@ namespace WebAPI
                 option.AddPolicy("AllowOrigin",
                     builder => builder.AllowAnyOrigin());
             });
+
             var tokenOptions = Configuration.GetSection("TokenOptions").Get<TokenOption>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
@@ -50,6 +54,10 @@ namespace WebAPI
                 };
             });
 
+            services.AddDependencyResolvers(new ICoreModule[]
+            {
+                new CoreModule(), 
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
