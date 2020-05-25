@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Transactions;
 using Business.Abstract;
 using Business.Constants;
 using Business.ValidationRules.FluentValidations;
+using Core.Aspects.Autofac.Transaction;
 using Core.Aspects.Autofac.Validation;
 using Core.CrossCuttingConcerns.Validation.FluentValidation;
 using Core.Utilities.Results;
@@ -56,7 +58,7 @@ namespace Business.Concrete
             _productDal.Add(product);
             return new SuccessResult(Messages.Added);
         }
-
+        //[ValidationAspect(typeof(ProductValidator),Priority = 1)]
         public IResult Update(Product product)
         {
             _productDal.Update(product);
@@ -67,6 +69,14 @@ namespace Business.Concrete
         {
             _productDal.Delete(product);
             return new SuccessResult(Messages.Deleted);
+        }
+        [TransactionAspect]
+        public IResult TransactionalOperation(Product product)
+        {
+            _productDal.Update(product);
+            _productDal.Add(product);
+
+            return new SuccessResult(Messages.Updated);
         }
     }
 }

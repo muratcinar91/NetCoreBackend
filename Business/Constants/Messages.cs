@@ -17,7 +17,7 @@ namespace Business.Constants
         public static string UserAlreadyExists = "Kullanıcı Daha Önce Eklenmiştir.";
         public static string UserRegistered = "Kullanıcı Başarıyla Kaydedildi.";
         public static string AccessTokenCreated = "Access Token Başarılı ile Oluşturuldu.";
-        public static string ProductNameCanNotEmply = "Ürün Adı Boş Olamaz.";
+        public static string ProductNameCanNotEmpty = "Ürün Adı Boş Olamaz.";
         public static string ProductNameLength = "Ürün Adı 40 Karakterden Fazla Olamaz.";
         public static string CategoryIdCanNotEmpty = "Kategori Boş Olamaz.";
         public static string UnitPriceNotEqualZero = "Ürün Birim Fiyatı 0 Olamaz.";
