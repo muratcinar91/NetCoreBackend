@@ -1,12 +1,14 @@
 ﻿using Core.Entities.Concrete;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Business.Constants
 {
     public static class Messages
     {
+        public static string AuthorizationDenied = "İşlem Yapma Yetkiniz Bulunmamaktadır.";
         public static string Added = "Başarıyla Eklendi.";
         public static string Updated = "Başarıyla Güncellendi.";
         public static string Deleted = "Başarıyla Silindi.";

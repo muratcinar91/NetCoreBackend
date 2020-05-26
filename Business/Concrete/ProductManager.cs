@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Transactions;
 using Business.Abstract;
+using Business.BusinessAspects.Autofac;
 using Business.Constants;
 using Business.ValidationRules.FluentValidations;
 using Core.Aspects.Autofac.Caching;
@@ -14,6 +15,7 @@ using Core.Utilities.Results;
 using DataAccess.Abstract;
 using DataAccess.Concrete.EntityFramework;
 using Entities.Concrete;
+using Microsoft.AspNetCore.Http;
 
 namespace Business.Concrete
 {
@@ -23,7 +25,7 @@ namespace Business.Concrete
     /// </summary>
     public class ProductManager : IProductService
     {
-        private IProductDal _productDal;
+        private readonly IProductDal _productDal;
 
         public ProductManager(IProductDal productDal)
         {
@@ -47,7 +49,7 @@ namespace Business.Concrete
         {
             return new SuccessDataResult<List<Product>>(_productDal.GetList().ToList());
         }
-
+        [SecureOperetion("Product.List,Admin")]
         [CacheAspect(duration:10)]
         public IDataResult<List<Product>> GetListByCategory(int categoryId)
         {
