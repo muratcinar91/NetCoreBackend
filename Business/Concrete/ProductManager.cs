@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Transactions;
 using Business.Abstract;
 using Business.BusinessAspects.Autofac;
 using Business.Constants;
 using Business.ValidationRules.FluentValidations;
 using Core.Aspects.Autofac.Caching;
+using Core.Aspects.Autofac.Performance;
 using Core.Aspects.Autofac.Transaction;
 using Core.Aspects.Autofac.Validation;
 using Core.CrossCuttingConcerns.Validation.FluentValidation;
@@ -45,10 +47,12 @@ namespace Business.Concrete
            
         }
 
+        [PerformanceAspect(5,"cinarmurat1991@gmail.com,muratc42@gmail.com")]
         public IDataResult<List<Product>> GetList()
         {
             return new SuccessDataResult<List<Product>>(_productDal.GetList().ToList());
         }
+
         [SecureOperetion("Product.List,Admin")]
         [CacheAspect(duration:10)]
         public IDataResult<List<Product>> GetListByCategory(int categoryId)
