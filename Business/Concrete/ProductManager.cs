@@ -9,6 +9,7 @@ using Business.BusinessAspects.Autofac;
 using Business.Constants;
 using Business.ValidationRules.FluentValidations;
 using Core.Aspects.Autofac.Caching;
+using Core.Aspects.Autofac.Exception;
 using Core.Aspects.Autofac.Logging;
 using Core.Aspects.Autofac.Performance;
 using Core.Aspects.Autofac.Transaction;
@@ -48,17 +49,16 @@ namespace Business.Concrete
             }
            
         }
-
+        
         [PerformanceAspect(5,"cinarmurat1991@gmail.com,muratc42@gmail.com")]
         public IDataResult<List<Product>> GetList()
         {
             return new SuccessDataResult<List<Product>>(_productDal.GetList().ToList());
         }
 
-        //[SecureOperetion("Product.List,Admin")]
+        [SecureOperetion("Product.List,Admin")]
         [LogAspect(typeof(DatabaseLogger))]
         [CacheAspect(duration:10)]
-        
         public IDataResult<List<Product>> GetListByCategory(int categoryId)
         {
             return new SuccessDataResult<List<Product>>(_productDal.GetList(p=>p.CategoryId==categoryId).ToList());
