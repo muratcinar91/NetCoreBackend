@@ -27,5 +27,7 @@ namespace Business.Constants
         public static string UnitPriceCanNotEmpty = "Birim Fiyatı Boş Olamaz.";
         public static string PhonePriceIsGreaterThenX = "Telefon Birim Fiyatı 2000' den Büyük Olmalıdır.";
         public static string ProductNameNotIncludeSpecialChracter = "Ürün Adı Sadece Harf ve Sayı İçermelidir.";
+        public static readonly string ProductNameAllreadyExists = "Bu İsim İle Daha Önce Ürün Eklenmiştir.";
+        public static readonly string CategoryStatusNotEnable = "Kategori Aktif Bir Statüde Değildir";
     }
 }

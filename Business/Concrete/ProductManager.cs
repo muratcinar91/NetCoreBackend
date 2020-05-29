@@ -16,6 +16,7 @@ using Core.Aspects.Autofac.Transaction;
 using Core.Aspects.Autofac.Validation;
 using Core.CrossCuttingConcerns.Logging.Log4Net.Loggers;
 using Core.CrossCuttingConcerns.Validation.FluentValidation;
+using Core.Utilities.Business;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using DataAccess.Concrete.EntityFramework;
@@ -31,54 +32,70 @@ namespace Business.Concrete
     public class ProductManager : IProductService
     {
         private readonly IProductDal _productDal;
+        private ICategoryService _categoryService;
 
-        public ProductManager(IProductDal productDal)
+        public ProductManager(IProductDal productDal, ICategoryService categoryService)
         {
             _productDal = productDal;
+            _categoryService = categoryService;
         }
 
+        [SecureOperetion("Product.First,Admin")]
+        [LogAspect(typeof(DatabaseLogger))]
+        [PerformanceAspect(5, "cinarmurat1991@gmail.com")]
+        [CacheAspect(duration: 10)]
         public IDataResult<Product> GetById(int productId)
         {
-            try
-            {
-                return new SuccessDataResult<Product>(_productDal.Get(p => p.ProductId == productId)); 
-            }
-            catch (Exception e)
-            {
-                return new ErrorDataResult<Product>("Error : " + e.Message);
-            }
-           
+            return new SuccessDataResult<Product>(_productDal.Get(p => p.ProductId == productId));
         }
-        
-        [PerformanceAspect(5,"cinarmurat1991@gmail.com,muratc42@gmail.com")]
+
+        [SecureOperetion("Product.List,Admin", Priority = 1)]
+        [LogAspect(typeof(DatabaseLogger))]
+        [PerformanceAspect(5, "cinarmurat1991@gmail.com")]
+        [CacheAspect(duration: 10)]
         public IDataResult<List<Product>> GetList()
         {
             return new SuccessDataResult<List<Product>>(_productDal.GetList().ToList());
         }
 
-        [SecureOperetion("Product.List,Admin")]
+        [SecureOperetion("Product.List,Admin", Priority = 1)]
         [LogAspect(typeof(DatabaseLogger))]
-        [CacheAspect(duration:10)]
+        [CacheAspect(duration: 10)]
+        [PerformanceAspect(5, "cinarmurat1991@gmail.com")]
         public IDataResult<List<Product>> GetListByCategory(int categoryId)
         {
-            return new SuccessDataResult<List<Product>>(_productDal.GetList(p=>p.CategoryId==categoryId).ToList());
+            return new SuccessDataResult<List<Product>>(_productDal.GetList(p => p.CategoryId == categoryId).ToList());
         }
 
-        [ValidationAspect(typeof(ProductValidator),Priority = 1)]
+        [SecureOperetion("Admin", Priority = 1)]
+        [LogAspect(typeof(DatabaseLogger))]
+        [ValidationAspect(typeof(ProductValidator), Priority = 2)]
         [CacheRemoveAspect("IProductService.Get")]//Pattern' i IProductService.Get olanları kaldırır.
         public IResult Add(Product product)
         {
+            IResult result = BusinessRules.Run(CheckIfProductNameExists(product.ProductName),
+                CheckIfCategoryIsEnabled(product.CategoryId));
+            if (result != null)
+            {
+                return result;
+            }
             _productDal.Add(product);
             return new SuccessResult(Messages.Added);
         }
 
-        [ValidationAspect(typeof(ProductValidator),Priority = 1)]
+        [SecureOperetion("Admin", Priority = 1)]
+        [LogAspect(typeof(DatabaseLogger))]
+        [ValidationAspect(typeof(ProductValidator), Priority = 2)]
+        [CacheRemoveAspect("IProductService.Get")]//Pattern' i IProductService.Get olanları kaldırır.
         public IResult Update(Product product)
         {
             _productDal.Update(product);
             return new SuccessResult(Messages.Updated);
         }
 
+        [SecureOperetion("Product.List,Admin", Priority = 1)]
+        [LogAspect(typeof(DatabaseLogger))]
+        [CacheRemoveAspect("IProductService.Get")]
         public IResult Delete(Product product)
         {
             _productDal.Delete(product);
@@ -92,6 +109,27 @@ namespace Business.Concrete
             _productDal.Add(product);
 
             return new SuccessResult(Messages.Updated);
+        }
+
+        private IResult CheckIfProductNameExists(string productName)
+        {
+            if (_productDal.Get(p => p.ProductName == productName) != null)
+            {
+                return new ErrorResult(Messages.ProductNameAllreadyExists);
+            }
+
+            return new SuccessResult();
+        }
+
+        private IResult CheckIfCategoryIsEnabled(int categoryId)
+        {
+            var result = _categoryService.GetById(categoryId);
+            if (result.Data==null || !result.Data.Status)
+            {
+                return new ErrorResult(Messages.CategoryStatusNotEnable);
+            }
+
+            return new SuccessResult();
         }
     }
 }
